@@ -54,6 +54,7 @@
 
 	uint8_t tx_buffer_u8[SPI_BUFFER_SIZE];
 	uint8_t rx_buffer_u8[SPI_BUFFER_SIZE]  = { 0 };
+	uint8_t offset_u8 = 0x21;
 
 /* USER CODE END PV */
 
@@ -103,7 +104,15 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   	char DataChar[0xFF];
-	sprintf(DataChar,"\r\n\tSPI for VIY\r\n\r\n" );
+	sprintf(DataChar,"\r\n\tSPI+DMA for VIY\r\n" );
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
+	#define DATE_as_int_str 	(__DATE__)
+	#define TIME_as_int_str 	(__TIME__)
+	sprintf(DataChar,"\tBuild: %s. Time: %s." , DATE_as_int_str , TIME_as_int_str ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
+	sprintf(DataChar,"\r\n\tFor debug: UART1-115200/8-N-1\r\n" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
   /* USER CODE END 2 */
@@ -113,7 +122,11 @@ int main(void)
   while (1)
   {
 	for (uint8_t i = 0; i < SPI_BUFFER_SIZE; i++) {
-		tx_buffer_u8[i] = 0x30 + i ;
+		tx_buffer_u8[i] = i + offset_u8;
+	}
+	offset_u8++;
+	if (offset_u8 > (0x7F - SPI_BUFFER_SIZE) ) {
+		offset_u8 = 0x21 ;
 	}
 	sprintf(DataChar,"\r\n\r\nSPI_Tx_DMA:\t" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
