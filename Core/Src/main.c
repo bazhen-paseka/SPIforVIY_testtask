@@ -128,6 +128,9 @@ int main(void)
 	if (offset_u8 > (0x7F - SPI_BUFFER_SIZE) ) {
 		offset_u8 = 0x21 ;
 	}
+
+	HAL_SPI_Receive_DMA(&hspi2, rx_buffer_u8, SPI_BUFFER_SIZE);
+
 	sprintf(DataChar,"\r\n\r\nSPI_Tx_DMA:\t" ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 	snprintf(DataChar, SPI_BUFFER_SIZE , "%s", tx_buffer_u8 ) ;
@@ -135,14 +138,14 @@ int main(void)
 
 	HAL_SPI_Transmit_DMA(&hspi1, tx_buffer_u8, SPI_BUFFER_SIZE);
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
-	HAL_SPI_Receive(&hspi2, rx_buffer_u8, SPI_BUFFER_SIZE, 500);
+	//HAL_SPI_Receive(&hspi2, rx_buffer_u8, SPI_BUFFER_SIZE, 500);
 
 	HAL_Delay(1000);
 
-	sprintf(DataChar,"\r\nSPI_Rx:\t\t" ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
-	snprintf(DataChar, SPI_BUFFER_SIZE , "%s", (char*)rx_buffer_u8 ) ;
-	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+//	sprintf(DataChar,"\r\nSPI_Rx:\t\t" ) ;
+//	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+//	snprintf(DataChar, SPI_BUFFER_SIZE , "%s", (char*)rx_buffer_u8 ) ;
+//	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
     /* USER CODE END WHILE */
 
@@ -195,6 +198,16 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
   if (hspi->Instance == SPI1) {
 	  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
   }
+}
+
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
+	if (hspi->Instance == SPI2) {
+		char uart_buffer [0xFF] = { 0 } ;
+		sprintf(uart_buffer,"\r\nSPI_Rx_DMA:\t" ) ;
+		HAL_UART_Transmit( &huart1, (uint8_t *)uart_buffer , strlen(uart_buffer) , 100 ) ;
+		snprintf(uart_buffer, SPI_BUFFER_SIZE , "%s", (char*)rx_buffer_u8 ) ;
+		HAL_UART_Transmit( &huart1, (uint8_t *)uart_buffer , strlen(uart_buffer) , 100 ) ;
+	}
 }
 
 /* USER CODE END 4 */
