@@ -53,6 +53,7 @@
 /* USER CODE BEGIN PV */
 
 	uint8_t tx_buffer_u8[SPI_BUFFER_SIZE];
+	uint8_t rx_buffer_u8[SPI_BUFFER_SIZE]  = { 0 };
 
 /* USER CODE END PV */
 
@@ -98,6 +99,7 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   MX_SPI1_Init();
+  MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
 
   	char DataChar[0xFF];
@@ -118,10 +120,16 @@ int main(void)
 	snprintf(DataChar, SPI_BUFFER_SIZE , "%s", tx_buffer_u8 ) ;
 	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
-	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
 	HAL_SPI_Transmit_DMA(&hspi1, tx_buffer_u8, SPI_BUFFER_SIZE);
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
+	HAL_SPI_Receive(&hspi2, rx_buffer_u8, SPI_BUFFER_SIZE, 500);
 
 	HAL_Delay(1000);
+
+	sprintf(DataChar,"\r\nSPI_Rx:\t\t" ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	snprintf(DataChar, SPI_BUFFER_SIZE , "%s", (char*)rx_buffer_u8 ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
 
     /* USER CODE END WHILE */
 
