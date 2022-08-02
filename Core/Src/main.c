@@ -38,6 +38,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+	#define	SPI_BUFFER_SIZE	16
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -48,6 +51,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+	uint8_t tx_buffer_u8[SPI_BUFFER_SIZE];
 
 /* USER CODE END PV */
 
@@ -105,10 +110,19 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	for (uint8_t i = 0; i < SPI_BUFFER_SIZE; i++) {
+		tx_buffer_u8[i] = 0x30 + i ;
+	}
+	sprintf(DataChar,"\r\n\r\nSPI_Tx_DMA:\t" ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+	snprintf(DataChar, SPI_BUFFER_SIZE , "%s", tx_buffer_u8 ) ;
+	HAL_UART_Transmit( &huart1, (uint8_t *)DataChar , strlen(DataChar) , 100 ) ;
+
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
-	HAL_Delay(50);
-	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-	HAL_Delay(500);
+	HAL_SPI_Transmit_DMA(&hspi1, tx_buffer_u8, SPI_BUFFER_SIZE);
+
+	HAL_Delay(1000);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -156,6 +170,11 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+  if (hspi->Instance == SPI1) {
+	  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
+  }
+}
 
 /* USER CODE END 4 */
 
